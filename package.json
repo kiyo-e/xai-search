@@ -1,0 +1,30 @@
+{
+  "name": "gpt-search",
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "bun@1.2.21",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "cli": "bun src/cli.ts",
+    "cli:serve": "bun src/cli.ts serve",
+    "cli:stdio": "bun src/cli.ts --stdio",
+    "search": "bun src/cli.ts search",
+    "build:bin": "bun build --compile ./src/cli.ts --outfile ./bin/gpt-search",
+    "build:bin:release": "bun build --compile --minify ./src/cli.ts --outfile ./bin/gpt-search"
+  },
+  "dependencies": {
+    "@hono/mcp": "^0.1.4",
+    "@hono/node-server": "^1.19.1",
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "hono": "^4.9.6",
+    "hono-cli-adapter": "^0.1.4",
+    "openai": "^5.20.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "wrangler": "^4.4.0"
+  }
+}
