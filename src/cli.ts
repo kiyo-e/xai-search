@@ -7,7 +7,6 @@ import { buildServer } from "./app";
 import type { Env } from "./env";
 
 const args = process.argv.slice(2);
-console.log("Args:", args);
 const useStdio = args.includes("--stdio");
 const isServe = args[0] === "serve" || args[0] === "server" || args.includes("--server") || args.includes("--http");
 const port = Number(process.env.PORT || "9876");

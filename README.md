@@ -47,8 +47,21 @@ bun install
 ### 1) CLI (recommended)
 Use `search <input>`. Add `--json` for pretty JSON wrapping.
 
+Run with npx (no local install):
 ```bash
-# via npm
+# latest published version
+OPENAI_API_KEY=sk-... npx gpt-search@latest search "Rust learning roadmap"
+
+# pin a specific version
+OPENAI_API_KEY=sk-... npx gpt-search@0.1.1 search "Next.js image optimization"
+
+# tip: skip npx prompts
+OPENAI_API_KEY=sk-... npx --yes gpt-search@latest search "Supabase RLS basics"
+```
+
+Local runs during development:
+```bash
+# via npm script
 OPENAI_API_KEY=sk-... npm run cli -- search "Rust learning roadmap"
 
 # direct with Bun
@@ -60,22 +73,45 @@ OPENAI_API_KEY=sk-... npm run search -- "Supabase RLS basics"
 
 
 ### 2) HTTP server (local)
-Expose `/search` by running `serve` mode.
+Expose `/search` and `/mcp` over HTTP.
 
+Aliases: `serve` | `server` | `--server` | `--http`
+
+Examples:
 ```bash
+# via npm script (serve alias)
 OPENAI_API_KEY=sk-... npm run cli:serve
 
-# POST /search
+# with npx (flag)
+OPENAI_API_KEY=sk-... npx --yes gpt-search@latest --server
+
+# with npx (alias command)
+OPENAI_API_KEY=sk-... npx --yes gpt-search@latest serve
+
+# custom port (default: 9876)
+PORT=8080 OPENAI_API_KEY=sk-... npx --yes gpt-search@latest --http
+
+# POST /search example
 curl -sS -X POST localhost:9876/search \
   --json '{"input":"Next.js image optimization"}'
+
+# MCP over HTTP endpoint
+# -> http://localhost:9876/mcp
 ```
 
 
 ### 3) Local MCP (stdio)
-Connect from an MCP client via stdio.
+Run an MCP server over stdio for local MCP-compatible clients.
 
+Flag: `--stdio`
+
+Examples:
 ```bash
+# via npm script
 OPENAI_API_KEY=sk-... npm run cli:stdio
+
+# with npx (no local install)
+OPENAI_API_KEY=sk-... npx --yes gpt-search@latest --stdio
 ```
 
 
@@ -122,6 +158,12 @@ OPENAI_API_KEY=sk-... ./bin/gpt-search search "Compare LLMs"
 - CLI normalizes `search <input>` into `POST /search { input }`.
 - MCP Tool name: `gpt-web-search`.
 - Core: OpenAI Responses API + `web_search_preview` tool.
+
+### Publishing & `npm exec`
+- This package exposes a `bin` entry (`gpt-search`) that points to `dist/cli.js`.
+- After publishing to npm, you can also run:
+  - `OPENAI_API_KEY=sk-... npm exec gpt-search -- search "..."`
+  - or simply prefer `npx gpt-search@latest ...` as shown above.
 
 
 ## License / Credits
