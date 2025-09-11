@@ -1,11 +1,19 @@
 {
   "name": "gpt-search",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "license": "MIT",
   "packageManager": "bun@1.2.21",
   "bin": {
     "gpt-search": "dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiyo-e/gpt-search.git"
+  },
+  "homepage": "https://github.com/kiyo-e/gpt-search#readme",
+  "bugs": {
+    "url": "https://github.com/kiyo-e/gpt-search/issues"
   },
   "files": [
     "dist",

@@ -10,36 +10,14 @@ An implementation sample that uses one Hono-based application code to support fo
 Core behavior is inspired by:
 - https://github.com/yoshiko-pg/o3-search-mcp/
 
-
-### Structure
-- `src/search.ts`: Common OpenAI search core
-- `src/env.ts`: Environment variable type definition
-- `src/app.ts`: MCP Server (Tool) calling `runSearch()`
-- `src/index.ts`: Hono app providing `POST /search` and `/mcp`
-- `src/cli.ts`: Switches between CLI/serve/stdio via `hono-cli-adapter`
-
+### What It Is
+- Purpose: Makes OpenAI’s high-end models and their powerful web search available to your AI agents.
+- Modes: Usable both as an MCP server (stdio or HTTP) and as a stand-alone CLI.
+- Agent integration: Register it as an MCP tool in any compatible AI coding agent, or instruct the agent to call the CLI. The agent can then autonomously consult OpenAI, research on the web, and work through multi-step, complex tasks.
 
 ### Requirements
 - Node.js 18+ (or Bun)
 - OpenAI API Key (`OPENAI_API_KEY`)
-
-
-### Install
-```bash
-npm i
-# or with Bun
-bun install
-```
-
-
-### Environment
-- `OPENAI_API_KEY` (required)
-- `SEARCH_CONTEXT_SIZE` = `low|medium|high` (optional, default: `medium`)
-- `REASONING_EFFORT` = `low|medium|high` (optional, default: `low`)
-- `TZ` (optional, default: `Asia/Tokyo`)
-- `PORT` (optional, default: `9876`)
-
-`hono-cli-adapter` merges environment in this order: `process.env` < `options.env` < `--env KEY=VALUE`.
 
 
 ## Usage
@@ -153,6 +131,31 @@ npm run build:bin:release  # -> bin/gpt-search
 OPENAI_API_KEY=sk-... ./bin/gpt-search search "Compare LLMs"
 ```
 
+## Development
+
+### Install
+```bash
+npm i
+# or with Bun
+bun install
+```
+
+### Environment
+- `OPENAI_API_KEY` (required)
+- `SEARCH_CONTEXT_SIZE` = `low|medium|high` (optional, default: `medium`)
+- `REASONING_EFFORT` = `low|medium|high` (optional, default: `low`)
+- `TZ` (optional, default: `Asia/Tokyo`)
+- `PORT` (optional, default: `9876`)
+
+`hono-cli-adapter` merges environment in this order: `process.env` < `options.env` < `--env KEY=VALUE`.
+
+
+### Structure
+- `src/search.ts`: Common OpenAI search core
+- `src/env.ts`: Environment variable type definition
+- `src/app.ts`: MCP Server (Tool) calling `runSearch()`
+- `src/index.ts`: Hono app providing `POST /search` and `/mcp`
+- `src/cli.ts`: Switches between CLI/serve/stdio via `hono-cli-adapter`
 
 ## Notes
 - CLI normalizes `search <input>` into `POST /search { input }`.
