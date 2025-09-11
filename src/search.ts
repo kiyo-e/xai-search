@@ -22,4 +22,3 @@ export async function runSearch(input: string, env: Env): Promise<string> {
 
   return response.output_text ?? "No response text available.";
 }
-

@@ -6,4 +6,3 @@ export interface Env {
   TZ?: string
   PORT?: string
 }
-
