@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "gpt-search",
+  "name": "xai-search",
   "main": "src/index.ts",
   "compatibility_date": "2025-09-09"
   // "compatibility_flags": [

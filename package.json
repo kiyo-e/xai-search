@@ -1,19 +1,19 @@
 {
-  "name": "gpt-search",
+  "name": "xai-search",
   "version": "0.1.4",
   "type": "module",
   "license": "MIT",
   "packageManager": "bun@1.2.21",
   "bin": {
-    "gpt-search": "dist/cli.js"
+    "xai-search": "dist/cli.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kiyo-e/gpt-search.git"
+    "url": "git+https://github.com/kiyo-e/xai-search.git"
   },
-  "homepage": "https://github.com/kiyo-e/gpt-search#readme",
+  "homepage": "https://github.com/kiyo-e/xai-search#readme",
   "bugs": {
-    "url": "https://github.com/kiyo-e/gpt-search/issues"
+    "url": "https://github.com/kiyo-e/xai-search/issues"
   },
   "files": [
     "dist",
@@ -37,8 +37,8 @@
     "build": "bun build ./src/cli.ts --target node --outfile ./dist/cli.js",
     "prepare": "npm run build",
     "prepack": "npm run build",
-    "build:bin": "bun build --compile ./src/cli.ts --outfile ./bin/gpt-search",
-    "build:bin:release": "bun build --compile --minify ./src/cli.ts --outfile ./bin/gpt-search"
+    "build:bin": "bun build --compile ./src/cli.ts --outfile ./bin/xai-search",
+    "build:bin:release": "bun build --compile --minify ./src/cli.ts --outfile ./bin/xai-search"
   },
   "dependencies": {
     "@hono/mcp": "^0.1.4",

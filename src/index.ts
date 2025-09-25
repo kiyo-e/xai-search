@@ -2,19 +2,18 @@ import { Hono } from "hono";
 import { StreamableHTTPTransport } from "@hono/mcp";
 import { buildServer } from "./app";
 import { runSearch } from "./search";
+import type { SearchParams } from "./search";
+import type { Env } from "./env";
 
-export interface Env {
-  OPENAI_API_KEY: string
-  SEARCH_CONTEXT_SIZE?: 'low' | 'medium' | 'high'
-  REASONING_EFFORT?: 'low' | 'medium' | 'high'
-  TZ?: string
-}
-const app = new Hono<{ Bindings: Env }>()
+const app = new Hono<{ Bindings: Env }>();
 
 app.post("/search/:input", async (c) => {
   const input = c.req.param("input");
   if (!input) return c.text("Missing 'input'", 400);
-  const text = await runSearch(input, c.env as Env);
+
+  const body = await c.req.json();
+
+  const text = await runSearch(input, c.env as Env, body as SearchParams);
   return c.text(text);
 });
 
@@ -26,3 +25,4 @@ app.all("/mcp", async (c) => {
 });
 
 export default app;
+export type { Env };

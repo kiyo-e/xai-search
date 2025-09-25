@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "gpt-search",
+      "name": "xai-search",
       "dependencies": {
         "@hono/mcp": "^0.1.4",
         "@hono/node-server": "^1.19.1",

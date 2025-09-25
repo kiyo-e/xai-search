@@ -1,4 +1,4 @@
-## gpt-search
+## xai-search
 
 An implementation sample that uses one Hono-based application code to support four modes:
 
@@ -28,13 +28,13 @@ Use `search <input>`. Add `--json` for pretty JSON wrapping.
 Run with npx (no local install):
 ```bash
 # latest published version
-OPENAI_API_KEY=sk-... npx gpt-search@latest search "Rust learning roadmap"
+OPENAI_API_KEY=sk-... npx xai-search@latest search "Rust learning roadmap"
 
 # pin a specific version
-OPENAI_API_KEY=sk-... npx gpt-search@0.1.1 search "Next.js image optimization"
+OPENAI_API_KEY=sk-... npx xai-search@0.1.1 search "Next.js image optimization"
 
 # tip: skip npx prompts
-OPENAI_API_KEY=sk-... npx --yes gpt-search@latest search "Supabase RLS basics"
+OPENAI_API_KEY=sk-... npx --yes xai-search@latest search "Supabase RLS basics"
 ```
 
 Local runs during development:
@@ -61,13 +61,13 @@ Examples:
 OPENAI_API_KEY=sk-... npm run cli:serve
 
 # with npx (flag)
-OPENAI_API_KEY=sk-... npx --yes gpt-search@latest --server
+OPENAI_API_KEY=sk-... npx --yes xai-search@latest --server
 
 # with npx (alias command)
-OPENAI_API_KEY=sk-... npx --yes gpt-search@latest serve
+OPENAI_API_KEY=sk-... npx --yes xai-search@latest serve
 
 # custom port (default: 9876)
-PORT=8080 OPENAI_API_KEY=sk-... npx --yes gpt-search@latest --http
+PORT=8080 OPENAI_API_KEY=sk-... npx --yes xai-search@latest --http
 
 # POST /search example
 curl -sS -X POST localhost:9876/search \
@@ -89,7 +89,7 @@ Examples:
 OPENAI_API_KEY=sk-... npm run cli:stdio
 
 # with npx (no local install)
-OPENAI_API_KEY=sk-... npx --yes gpt-search@latest --stdio
+OPENAI_API_KEY=sk-... npx --yes xai-search@latest --stdio
 ```
 
 
@@ -122,13 +122,13 @@ Build on each target platform.
 
 ```bash
 # debug-like
-npm run build:bin   # -> bin/gpt-search
+npm run build:bin   # -> bin/xai-search
 
 # release-like (minify)
-npm run build:bin:release  # -> bin/gpt-search
+npm run build:bin:release  # -> bin/xai-search
 
 # run example
-OPENAI_API_KEY=sk-... ./bin/gpt-search search "Compare LLMs"
+OPENAI_API_KEY=sk-... ./bin/xai-search search "Compare LLMs"
 ```
 
 ## Development
@@ -163,10 +163,10 @@ bun install
 - Core: OpenAI Responses API + `web_search_preview` tool.
 
 ### Publishing & `npm exec`
-- This package exposes a `bin` entry (`gpt-search`) that points to `dist/cli.js`.
+- This package exposes a `bin` entry (`xai-search`) that points to `dist/cli.js`.
 - After publishing to npm, you can also run:
-  - `OPENAI_API_KEY=sk-... npm exec gpt-search -- search "..."`
-  - or simply prefer `npx gpt-search@latest ...` as shown above.
+  - `OPENAI_API_KEY=sk-... npm exec xai-search -- search "..."`
+  - or simply prefer `npx xai-search@latest ...` as shown above.
 
 
 ## License / Credits

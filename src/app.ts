@@ -3,6 +3,9 @@ import { z } from "zod";
 import type { Env } from "./env";
 import { runSearch } from "./search";
 
+// Design reference: docs/design/live-search.md outlines the server entrypoint contract.
+// Related modules: src/search.ts encapsulates Grok Live Search calls; src/index.ts exposes HTTP bindings.
+
 export const buildServer = (env: Env) => {
   const server = new McpServer({ name: "gpt-web-search", version: "0.0.1" });
 

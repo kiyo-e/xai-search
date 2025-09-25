@@ -1,8 +1,9 @@
 export interface Env {
-  OPENAI_MODEL?: string
-  OPENAI_API_KEY: string
-  SEARCH_CONTEXT_SIZE?: 'low' | 'medium' | 'high'
-  REASONING_EFFORT?: 'low' | 'medium' | 'high'
+  XAI_API_KEY?: string
+  XAI_MODEL?: string
+  XAI_BASE_URL?: string
+  GROK_SEARCH_MODE?: 'auto' | 'on' | 'off'
+  GROK_SEARCH_RETURN_CITATIONS?: string
   TZ?: string
   PORT?: string
 }
