@@ -44,7 +44,7 @@ export async function runSearch(input: string, env: Env, params: SearchParamSour
   const baseURL = env.XAI_BASE_URL || DEFAULT_BASE_URL;
   const url = baseURL.endsWith("/") ? `${baseURL}chat/completions` : `${baseURL}/chat/completions`;
   const searchParameters: Record<string, unknown> = {
-    mode: env.GROK_SEARCH_MODE || "auto",
+    mode: env.GROK_SEARCH_MODE || "on",
   };
 
   for (const key of ALLOWED_SEARCH_PARAM_KEYS) {
