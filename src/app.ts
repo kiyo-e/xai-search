@@ -3,8 +3,8 @@ import { z } from "zod";
 import type { Env } from "./env";
 import { runSearch } from "./search";
 
-// Design reference: docs/design/live-search.md outlines the server entrypoint contract.
-// Related modules: src/search.ts encapsulates Grok Live Search calls; src/index.ts exposes HTTP bindings.
+// Design doc: docs/design/live-search.md captures the live-search MCP contract and data flow.
+// Related classes: McpServer wires the tool plumbing; StdioServerTransport (src/cli.ts) and StreamableHTTPTransport (src/index.ts) host it for CLI/HTTP clients.
 
 export const buildServer = (env: Env) => {
   const server = new McpServer({ name: "xai-web-search", version: "0.0.1" });
