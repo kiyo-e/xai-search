@@ -1,174 +1,153 @@
-## xai-search
+# xai-search
 
-An implementation sample that uses one Hono-based application code to support four modes:
+`xai-search` is a compact Grok live-search helper that lets the same Hono application power four different integration modes:
 
-- CLI (local execution)
-- Remote MCP (HTTP /mcp)
-- Local MCP (stdio)
-- HTTP API (/search)
+- CLI (`xai-search search <input>`)
+- HTTP server (`/search` and `/mcp` endpoints)
+- Local MCP server over stdio
+- Remote MCP server over HTTP via `StreamableHTTPTransport`
 
-Core behavior is inspired by:
-- https://github.com/yoshiko-pg/o3-search-mcp/
+The goal is to make xAI's Grok 4 Fast web search reachable from your own agents with minimal glue code.
 
-### What It Is
-- Purpose: Makes OpenAI’s high-end models and their powerful web search available to your AI agents.
-- Modes: Usable both as an MCP server (stdio or HTTP) and as a stand-alone CLI.
-- Agent integration: Register it as an MCP tool in any compatible AI coding agent, or instruct the agent to call the CLI. The agent can then autonomously consult OpenAI, research on the web, and work through multi-step, complex tasks.
+See `docs/design/live-search.md` for the internal wiring between the CLI adapter, HTTP routes, and MCP server.
 
-### Requirements
-- Node.js 18+ (or Bun)
-- OpenAI API Key (`OPENAI_API_KEY`)
+## Requirements
 
+- Node.js 18+ (or [Bun](https://bun.sh/))
+- `XAI_API_KEY` with access to Grok live search
 
-## Usage
+Optional:
 
-### 1) CLI (recommended)
-Use `search <input>`. Add `--json` for pretty JSON wrapping.
+- `XAI_MODEL` (defaults to `grok-4-fast`)
+- `XAI_BASE_URL` (defaults to `https://api.x.ai/v1`)
+- `GROK_SEARCH_MODE` (`auto|on|off`, defaults to `auto`)
+- `TZ` (forwarded to the CLI adapter, defaults to the host TZ)
+- `PORT` when serving HTTP (defaults to `9876`)
 
-Run with npx (no local install):
+## Quick Start
+
+### CLI (recommended during development)
+Run the CLI without installing locally:
+
 ```bash
 # latest published version
-OPENAI_API_KEY=sk-... npx xai-search@latest search "Rust learning roadmap"
+XAI_API_KEY=sk-... npx xai-search@latest search "Rust learning roadmap"
 
-# pin a specific version
-OPENAI_API_KEY=sk-... npx xai-search@0.1.1 search "Next.js image optimization"
+# pin a version
+XAI_API_KEY=sk-... npx xai-search@0.1.0 search "Next.js image optimization"
 
-# tip: skip npx prompts
-OPENAI_API_KEY=sk-... npx --yes xai-search@latest search "Supabase RLS basics"
+# avoid npx prompts
+XAI_API_KEY=sk-... npx --yes xai-search@latest search "Supabase RLS basics"
 ```
 
-Local runs during development:
+Local scripts use Bun by default but work with Node as well:
+
 ```bash
-# via npm script
-OPENAI_API_KEY=sk-... npm run cli -- search "Rust learning roadmap"
+# via npm script (Bun under the hood)
+XAI_API_KEY=sk-... npm run cli -- search "Compare LLMs"
 
-# direct with Bun
-OPENAI_API_KEY=sk-... bun src/cli.ts search "Next.js image optimization"
+# direct Bun execution
+XAI_API_KEY=sk-... bun src/cli.ts search "Vite plugin ideas"
 
-# shortcut
-OPENAI_API_KEY=sk-... npm run search -- "Supabase RLS basics"
+# CLI flags
+bun src/cli.ts --help
 ```
 
+`--json` pretty-prints the response, and `--env` lets you point to a `.env` file or supply ad-hoc key/value overrides recognized by `hono-cli-adapter`.
 
-### 2) HTTP server (local)
-Expose `/search` and `/mcp` over HTTP.
+### HTTP server (local)
+Expose `/search` and `/mcp` over HTTP:
 
-Aliases: `serve` | `server` | `--server` | `--http`
-
-Examples:
 ```bash
-# via npm script (serve alias)
-OPENAI_API_KEY=sk-... npm run cli:serve
+# npm script (alias: serve)
+XAI_API_KEY=sk-... npm run cli:serve
 
-# with npx (flag)
-OPENAI_API_KEY=sk-... npx --yes xai-search@latest --server
+# bun direct (flag form)
+XAI_API_KEY=sk-... bun src/cli.ts --server
 
-# with npx (alias command)
-OPENAI_API_KEY=sk-... npx --yes xai-search@latest serve
-
-# custom port (default: 9876)
-PORT=8080 OPENAI_API_KEY=sk-... npx --yes xai-search@latest --http
-
-# POST /search example
-curl -sS -X POST localhost:9876/search \
-  --json '{"input":"Next.js image optimization"}'
-
-# MCP over HTTP endpoint
-# -> http://localhost:9876/mcp
+# custom port
+PORT=8080 XAI_API_KEY=sk-... npm run cli:serve
 ```
 
+Endpoints:
 
-### 3) Local MCP (stdio)
-Run an MCP server over stdio for local MCP-compatible clients.
+- `POST /search/:input` → returns plain text from Grok. Optional JSON body accepts search parameters (`mode`, `return_citations`, `max_search_results`, `from_date`, `to_date`).
+- `POST /mcp` → MCP endpoint compatible with `StreamableHTTPTransport` clients.
 
-Flag: `--stdio`
+Example request with overrides:
 
-Examples:
 ```bash
-# via npm script
-OPENAI_API_KEY=sk-... npm run cli:stdio
-
-# with npx (no local install)
-OPENAI_API_KEY=sk-... npx --yes xai-search@latest --stdio
+curl -sS -X POST http://localhost:9876/search/"Next.js image optimization" \
+  --json '{
+    "mode": "on",
+    "return_citations": true,
+    "max_search_results": 5
+  }'
 ```
 
-
-### 4) Remote MCP (HTTP)
-Connect to `/mcp` using `@hono/mcp`’s `StreamableHTTPTransport`.
+### Local MCP (stdio)
+Run an MCP server over stdio for clients such as local coding agents:
 
 ```bash
-OPENAI_API_KEY=sk-... npm run cli:serve
-# -> connect to http://localhost:9876/mcp
+XAI_API_KEY=sk-... npm run cli:stdio
 ```
 
+### Remote MCP (HTTP)
+Spin up the HTTP server and point your agent to `http://localhost:9876/mcp` using `@hono/mcp`'s `StreamableHTTPTransport`:
 
-### Cloudflare Workers (optional)
-Development:
 ```bash
-npm run dev
-```
-Deploy:
-```bash
-npm run deploy
-```
-Type generation (optional): https://developers.cloudflare.com/workers/wrangler/commands/#types
-```bash
-npm run cf-typegen
+XAI_API_KEY=sk-... npm run cli:serve
+# -> MCP tool id: xai-web-search
 ```
 
+## Cloudflare Workers (optional)
 
-## Single binary (Bun)
-Build on each target platform.
+- `npm run dev` — start a local worker (requires Wrangler)
+- `npm run deploy` — deploy to Cloudflare Workers with minify enabled
+- `npm run cf-typegen` — regenerate type definitions (`worker-configuration.d.ts`)
+
+## Single Binary Build (Bun)
 
 ```bash
-# debug-like
-npm run build:bin   # -> bin/xai-search
+# debug style
+npm run build:bin       # -> bin/xai-search
 
-# release-like (minify)
-npm run build:bin:release  # -> bin/xai-search
+# release style
+npm run build:bin:release
 
-# run example
-OPENAI_API_KEY=sk-... ./bin/xai-search search "Compare LLMs"
+# invoke compiled binary
+XAI_API_KEY=sk-... ./bin/xai-search search "Compare LLMs"
 ```
 
 ## Development
 
-### Install
 ```bash
-npm i
-# or with Bun
+# install dependencies
+npm install
+# or
 bun install
+
+# build once (writes dist/cli.js)
+npm run build
+
+# format CLI usage
+bun src/cli.ts --help
 ```
 
-### Environment
-- `OPENAI_API_KEY` (required)
-- `SEARCH_CONTEXT_SIZE` = `low|medium|high` (optional, default: `medium`)
-- `REASONING_EFFORT` = `low|medium|high` (optional, default: `low`)
-- `TZ` (optional, default: `Asia/Tokyo`)
-- `PORT` (optional, default: `9876`)
+During CLI execution the adapter resolves environment values in this order:
 
-`hono-cli-adapter` merges environment in this order: `process.env` < `options.env` < `--env KEY=VALUE`.
-
-
-### Structure
-- `src/search.ts`: Common OpenAI search core
-- `src/env.ts`: Environment variable type definition
-- `src/app.ts`: MCP Server (Tool) calling `runSearch()`
-- `src/index.ts`: Hono app providing `POST /search` and `/mcp`
-- `src/cli.ts`: Switches between CLI/serve/stdio via `hono-cli-adapter`
+1. `process.env`
+2. Values supplied through adapter options (`options.env`) — unused by this binary
+3. `--env KEY=VALUE` flags or `.env` file references
 
 ## Notes
-- CLI normalizes `search <input>` into `POST /search { input }`.
-- MCP Tool name: `gpt-web-search`.
-- Core: OpenAI Responses API + `web_search_preview` tool.
 
-### Publishing & `npm exec`
-- This package exposes a `bin` entry (`xai-search`) that points to `dist/cli.js`.
-- After publishing to npm, you can also run:
-  - `OPENAI_API_KEY=sk-... npm exec xai-search -- search "..."`
-  - or simply prefer `npx xai-search@latest ...` as shown above.
-
+- CLI requests map `search <input>` to `POST /search { input }` under the hood.
+- `runSearch` currently returns the concatenated text from Grok; structured citations are surfaced when `return_citations` is enabled.
+- MCP server metadata (`name`/`version`) lives in `src/app.ts`.
+- Live search internals and future tuning switches are documented in `docs/design/live-search.md`.
 
 ## License / Credits
-- Main idea inspired by: https://github.com/yoshiko-pg/o3-search-mcp/
-- CLI adapter: https://github.com/kiyo-e/hono-cli-adapter
+
+- MIT License
+- CLI adapter provided by [`kiyo-e/hono-cli-adapter`](https://github.com/kiyo-e/hono-cli-adapter)
