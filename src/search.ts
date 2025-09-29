@@ -2,13 +2,16 @@ import type { Env } from "./env";
 
 const DEFAULT_BASE_URL = "https://api.x.ai/v1";
 const DEFAULT_MODEL = "grok-4-fast";
-const ALLOWED_SEARCH_PARAM_KEYS = [
+export const ALLOWED_SEARCH_PARAM_KEYS = [
   "mode",
   "return_citations",
   "max_search_results",
   "from_date",
   "to_date",
+  "sources",
 ] as const;
+
+export type AllowedSearchParamKey = typeof ALLOWED_SEARCH_PARAM_KEYS[number];
 
 type FetchFn = (
   input: string,
@@ -32,8 +35,62 @@ export interface SearchParams {
   max_search_results?: number | string;
   from_date?: string;
   to_date?: string;
+  sources?: SearchSource[] | SearchSource | string;
 }
 type SearchParamSource = SearchParams | URLSearchParams | Record<string, unknown>;
+
+export type SearchSource =
+  | { type: 'web'; profile?: string; mode?: SearchMode | string; country?: string; excluded_websites?: string[] | string; allowed_websites?: string[] | string; safe_search?: boolean | 'true' | 'false' }
+  | { type: 'news'; profile?: string; mode?: SearchMode | string; country?: string; excluded_websites?: string[] | string; safe_search?: boolean | 'true' | 'false' }
+  | { type: 'x'; profile?: string; mode?: SearchMode | string; included_x_handles?: string[] | string; excluded_x_handles?: string[] | string; post_view_count?: number | string; post_favorite_count?: number | string }
+  | { type: 'rss'; links?: string[] | string; profile?: string; mode?: SearchMode | string }
+  | { type: string; [key: string]: unknown };
+
+const toParamRecord = (source: SearchParamSource): Record<string, unknown> => {
+  if (source instanceof URLSearchParams) {
+    return Object.fromEntries(source.entries());
+  }
+  return source as Record<string, unknown>;
+};
+
+const buildSourcesFromTypes = (input: string): SearchSource[] | undefined => {
+  const tokens = input
+    .split(/[\s,]+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  if (tokens.length === 0) return undefined;
+
+  return tokens.map((type) => ({ type }));
+};
+
+const normalizeSources = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value;
+  if (value && typeof value === "object") return value;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return undefined;
+    }
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed) || (parsed && typeof parsed === "object")) {
+        return parsed;
+      }
+      if (typeof parsed === "string") {
+        return buildSourcesFromTypes(parsed);
+      }
+    } catch {
+      const fromTokens = buildSourcesFromTypes(trimmed);
+      if (fromTokens) return fromTokens;
+      return value;
+    }
+
+    const fromTokens = buildSourcesFromTypes(trimmed);
+    if (fromTokens) return fromTokens;
+  }
+  return value === undefined ? undefined : value;
+};
 
 export async function runSearch(input: string, env: Env, params: SearchParamSource): Promise<string> {
   const apiKey = env.XAI_API_KEY;
@@ -47,11 +104,19 @@ export async function runSearch(input: string, env: Env, params: SearchParamSour
     mode: env.GROK_SEARCH_MODE || "on",
   };
 
+  const paramRecord = toParamRecord(params);
+
   for (const key of ALLOWED_SEARCH_PARAM_KEYS) {
-    const value = params[key];
-    if (value !== undefined) {
-      searchParameters[key] = value;
+    const value = paramRecord[key];
+    if (value === undefined || value === null) continue;
+    if (key === "sources") {
+      const normalized = normalizeSources(value);
+      if (normalized !== undefined) {
+        searchParameters[key] = normalized;
+      }
+      continue;
     }
+    searchParameters[key] = value;
   }
 
   const payload = {

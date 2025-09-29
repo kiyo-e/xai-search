@@ -55,6 +55,33 @@ bun src/cli.ts --help
 
 `--json` pretty-prints the response, and `--env` lets you point to a `.env` file or supply ad-hoc key/value overrides recognized by `hono-cli-adapter`.
 
+To pass request parameters, append `--` and supply `key=value` pairs — they become the JSON body sent to `/search`. Values stay as strings unless the Grok API coerces them, so quote JSON yourself when needed.
+
+```bash
+# enable citations and bump max results
+XAI_API_KEY=sk-... bun src/cli.ts search "Rust learning roadmap" -- return_citations=true max_search_results=8
+```
+
+Scope the query to specific source types with the same shorthand:
+
+```bash
+# single source type
+XAI_API_KEY=sk-... bun src/cli.ts search "codexのアップデート情報" -- sources=x
+
+# multiple types (comma or space separated)
+XAI_API_KEY=sk-... bun src/cli.ts search "最新のLLMニュース" -- sources=web,news
+
+# complex objects — quote JSON explicitly
+XAI_API_KEY=sk-... bun src/cli.ts search "US AI regulation" \
+  -- sources='[{"type":"news","country":"US"},{"type":"web","profile":"default"}]'
+
+# build JSON safely from scripts
+XAI_API_KEY=sk-... bun src/cli.ts search "xAI roadmap" \
+  -- sources="$(jq -n '[{type:"x",included_x_handles:["xai"]}]')"
+```
+
+The CLI already supplies the default search `mode` from `GROK_SEARCH_MODE` (fallback `on`), so only override it with `-- mode=off` (or similar) when a specific request needs it.
+
 ### HTTP server (local)
 Expose `/search` and `/mcp` over HTTP:
 
@@ -71,7 +98,7 @@ PORT=8080 XAI_API_KEY=sk-... npm run cli:serve
 
 Endpoints:
 
-- `POST /search/:input` → returns plain text from Grok. Optional JSON body accepts search parameters (`mode`, `return_citations`, `max_search_results`, `from_date`, `to_date`).
+- `POST /search/:input` → returns plain text from Grok. Optional JSON body accepts search parameters (`mode`, `return_citations`, `max_search_results`, `from_date`, `to_date`, `sources`).
 - `POST /mcp` → MCP endpoint compatible with `StreamableHTTPTransport` clients.
 
 Example request with overrides:
@@ -81,7 +108,11 @@ curl -sS -X POST http://localhost:9876/search/"Next.js image optimization" \
   --json '{
     "mode": "on",
     "return_citations": true,
-    "max_search_results": 5
+    "max_search_results": 5,
+    "sources": [
+      { "type": "web", "profile": "default" },
+      { "type": "news", "mode": "auto" }
+    ]
   }'
 ```
 
