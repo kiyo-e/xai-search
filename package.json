@@ -1,6 +1,6 @@
 {
   "name": "xai-search",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "license": "MIT",
   "packageManager": "bun@1.2.21",
